@@ -1,0 +1,43 @@
+1️⃣ Auth Routes ☑️
+
+Method	   Endpoint	        Description 
+POST	  /api/auth/register	Register admin (can be disabled after first use) ☑️
+POST      /api/auth/logout      For logging out user ☑️
+POST	  /api/auth/login	Login admin (returns JWT) ☑️
+GET	  /api/auth/me	        Get logged-in user (verify token) ☑️
+
+
+
+2️⃣ Project Routes
+
+Method	    Endpoint         	Description
+GET	       /api/projects	        Get all projects
+GET        /api/projects/:id	    Get single project
+POST	   /api/projects	        Create new project
+PUT	       /api/projects/:id	    Update a project
+DELETE	   /api/projects/:id	    Delete a project
+
+
+Method	  Endpoint	        Description
+GET	  /api/skills	        Get all skills
+POST	  /api/skills	        Add a skill
+PUT	  /api/skills/:id	Update skill
+DELETE	  /api/skills/:id	Delete skill
+
+4️⃣ Experience & Education Routes
+
+Method	  Endpoint               	Description
+GET	     /api/experience	           Get all experiences
+POST	  /api/experience	           Add an experience
+PUT	     /api/experience/:id	       Update an experience
+DELETE	 /api/experience/:id	       Delete experience
+
+
+5️⃣ Contact / Message Routes
+Method	Endpoint	                 Description
+POST	/api/contact	             Submit contact form
+GET	/api/contact	                Get all messages (admin only)
+DELETE	/api/contact/:id	         Delete message
+
+
+
