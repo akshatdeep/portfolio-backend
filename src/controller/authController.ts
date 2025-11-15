@@ -35,9 +35,19 @@ export const login = async (req: Request, res: Response) => {
         if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
         // Generate token
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, { expiresIn: "7d" });
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, {
+            expiresIn: "7d",
+        });
 
-        res.status(200).json({ message: "Login successful", token });
+        // ✅ Set the token as an HTTP-only cookie
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false, // set true in production (HTTPS)
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
+
+        return res.status(200).json({ success: true, message: "Login successful" });
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
     }
@@ -62,29 +72,26 @@ export const getMe = async (req: Request, res: Response) => {
 let tokenBlacklist: string[] = [];
 
 export const logout = async (req: Request, res: Response) => {
-    try {
-        // Extract token from Authorization header
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return res.status(401).json({ message: "No token provided" });
-        }
+  try {
+    const token = req.cookies.token;
 
-        const token = authHeader.split(" ")[1];
-
-        // Add token to blacklist
-        tokenBlacklist.push(token);
-
-        // Optionally, you can set a cookie to expire immediately (if you're using cookies)
-        res.cookie("token", "", { expires: new Date(0) });
-
-        res.status(200).json({ message: "User logged out successfully" });
-    } catch (error) {
-        console.error("Logout error:", error);
-        res.status(500).json({ message: "Server error", error });
+    if (!token) {
+      return res.status(400).json({ message: "No token found" });
     }
-};
 
-// Utility to check if token is blacklisted
-export const isTokenBlacklisted = (token: string): boolean => {
-    return tokenBlacklist.includes(token);
+    // Add token to blacklist
+    tokenBlacklist.push(token);
+
+    // Clear cookie
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: false, // true in production
+      sameSite: "lax",
+    });
+
+    return res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    return res.status(500).json({ message: "Server error", error });
+  }
 };

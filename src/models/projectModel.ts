@@ -26,7 +26,6 @@ const projectSchema = new Schema<IProject>(
     },
     technologies: {
       type: [String],
-      required: true,
     },
     githubLink: {
       type: String,

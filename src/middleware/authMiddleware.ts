@@ -1,18 +1,11 @@
-import jwt from "jsonwebtoken";
-import { isTokenBlacklisted } from "../controller/authController";
 import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
 
 export const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  const token = req.cookies.token; // ✅ read from cookie
+
+  if (!token) {
     return res.status(401).json({ message: "No token provided" });
-  }
-
-  const token = authHeader.split(" ")[1];
-
-  // Check if blacklisted
-  if (isTokenBlacklisted(token)) {
-    return res.status(401).json({ message: "Token has been invalidated. Please login again." });
   }
 
   try {
