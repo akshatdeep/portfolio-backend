@@ -47,7 +47,7 @@ export const login = async (req: Request, res: Response) => {
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
 
-        return res.status(200).json({ success: true, message: "Login successful" });
+        return res.status(200).json({ success: true,token:token, message: "Login successful" });
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
     }
