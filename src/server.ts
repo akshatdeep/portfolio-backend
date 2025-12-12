@@ -7,39 +7,42 @@ import projectRoutes from "./routes/project.routes";
 import contactRoutes from "./routes/contact.routes";
 import cookieParser from "cookie-parser";
 
-import http from "http";
-import { Server } from "socket.io";
-
 // Load environment variables
 dotenv.config();
 
 // Initialize app
 const app: Application = express();
 
-// Create HTTP server (IMPORTANT for socket.io)
-const server = http.createServer(app);
+// --- CORS whitelist & options ---
+const whitelist = [
+  "http://localhost:5173",
+  "https://client-eight-liard-57.vercel.app" // Your Vercel frontend URL
+];
 
-// Create Socket.io server
-const io = new Server(server, {
-  cors: {
-    origin: process.env.CLIENT_URL ,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
-  }
-});
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // Allow mobile apps, curl, etc.
+    if (whitelist.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed by server"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+};
+
+// Apply CORS once
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Connect to MongoDB
-connectDB();
+connectDB().catch((err) => {
+  console.error("Failed to connect to MongoDB:", err);
+});
 
-// Middlewares
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"]
-  })
-);
+// Middleware
 app.use(express.json());
 app.use(cookieParser());
 
@@ -53,26 +56,11 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Portfolio Backend API is running 🚀");
 });
 
-// --- REAL-TIME VISITOR TRACKING ---
-
-let onlineUsers = 0;
-
-io.on("connection", (socket) => {
-  onlineUsers++;
-  console.log("User connected:", socket.id);
-
-  io.emit("onlineUsers", onlineUsers);
-
-  socket.on("disconnect", () => {
-    onlineUsers--;
-    console.log("User disconnected:", socket.id);
-
-    io.emit("onlineUsers", onlineUsers);
-  });
-});
-
-// Server listen
+// ================================
+// Start Server
+// ================================
 const PORT = process.env.PORT || 5001;
-server.listen(PORT, () =>
+
+app.listen(PORT, () =>
   console.log(`Server running on http://localhost:${PORT}`)
 );
