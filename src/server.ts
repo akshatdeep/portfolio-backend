@@ -1,66 +1,91 @@
-import express, { Application, Request, Response } from "express";
+// src/server.ts
+import express, { Application, Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
-import cors from "cors";
 import connectDB from "./config/db";
 import authRoutes from "./routes/auth.routes";
 import projectRoutes from "./routes/project.routes";
 import contactRoutes from "./routes/contact.routes";
 import cookieParser from "cookie-parser";
 
-// Load environment variables
 dotenv.config();
 
-// Initialize app
 const app: Application = express();
 
-// --- CORS whitelist & options ---
-const whitelist = [
+// ===============================
+// ✅ CORS MIDDLEWARE (WORKS ON VERCEL)
+// ===============================
+const WHITELIST = [
   "http://localhost:5173",
-  "https://client-eight-liard-57.vercel.app" // Your Vercel frontend URL
+  "https://client-eight-liard-57.vercel.app"
 ];
 
-const corsOptions: cors.CorsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // Allow mobile apps, curl, etc.
-    if (whitelist.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("CORS not allowed by server"));
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const origin = req.headers.origin as string | undefined;
+
+  // Allow server-to-server or tools without Origin
+  if (!origin) return next();
+
+  if (WHITELIST.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With"
+    );
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS"
+    );
+
+    // Handle preflight
+    if (req.method === "OPTIONS") {
+      return res.status(200).end();
     }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-};
 
-// Apply CORS once
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+    return next();
+  }
 
-// Connect to MongoDB
-connectDB().catch((err) => {
-  console.error("Failed to connect to MongoDB:", err);
+  return res.status(403).json({ error: "CORS blocked" });
 });
 
+// ===============================
 // Middleware
+// ===============================
 app.use(express.json());
 app.use(cookieParser());
 
+// ===============================
+// MongoDB Connection
+// ===============================
+(async () => {
+  try {
+    await connectDB();
+    console.log("MongoDB connected");
+  } catch (err) {
+    console.error("MongoDB connection failed:", err);
+  }
+})();
+
+// ===============================
 // Routes
+// ===============================
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/contact", contactRoutes);
 
-// Default route
-app.get("/", (req: Request, res: Response) => {
+// Health check
+app.get("/", (_req: Request, res: Response) => {
   res.send("Portfolio Backend API is running 🚀");
 });
 
-// ================================
-// Start Server
-// ================================
+// ===============================
+// Start Server (required for local dev)
+// Vercel uses serverless functions for production
+// ===============================
 const PORT = process.env.PORT || 5001;
 
-app.listen(PORT, () =>
-  console.log(`Server running on http://localhost:${PORT}`)
-);
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
+
+export default app;
