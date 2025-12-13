@@ -29,12 +29,18 @@ export const submitContact = async (req: Request, res: Response) => {
 
     // 2️⃣ Auto-reply to user
     const userReplyHTML = `
-      <h3>Hey ${name},</h3>
-      <p>Thanks for reaching out! 🙌</p>
-      <p>I appreciate your time and will get back to you soon.</p>
-      <br/>
-      <p>Best,<br/>Akshat Deep Astik</p>
-    `;
+  <h3>Hello ${name},</h3>
+
+  <p>Thank you for contacting me. Your message has been successfully received.</p>
+
+  <p>I appreciate your interest and the time you’ve taken to reach out. I will be reviewing your details shortly and will provide a comprehensive response as soon as possible. My goal is to ensure that all inquiries receive timely and thoughtful attention.</p>
+
+  <p>If you have any additional information, documents, or questions you’d like to share before I respond, please feel free to reply to this email at your convenience.</p>
+
+  <br/>
+  <p>Sincerely,<br/><strong>Akshat Deep Astik</strong></p>
+`;
+
 
     await sendMail(email, "Thanks for contacting me!", userReplyHTML);
 
