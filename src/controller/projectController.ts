@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import Project from "../models/projectModel";
 
-// 📦 Get all projects
 export const getProjects = async (req: Request, res: Response) => {
   try {
     const projects = await Project.find().sort({ createdAt: -1 });
@@ -11,7 +10,7 @@ export const getProjects = async (req: Request, res: Response) => {
   }
 };
 
-// 🔍 Get single project
+
 export const getProjectById = async (req: Request, res: Response) => {
   try {
     const project = await Project.findById(req.params.id);
@@ -22,7 +21,7 @@ export const getProjectById = async (req: Request, res: Response) => {
   }
 };
 
-// ➕ Create project
+
 export const createProject = async (req: Request, res: Response) => {
   try {
     const { title, description, technologies, githubLink, liveLink, media } = req.body;
@@ -30,14 +29,14 @@ export const createProject = async (req: Request, res: Response) => {
     if (!title || !description)
       return res.status(400).json({ message: "Title and description are required" });
 
-    // media comes from Cloudinary upload widget
+
     const project = await Project.create({
       title,
       description,
       technologies,
       githubLink,
       liveLink,
-      media, // [{ url, public_id, type }]
+      media, 
     });
 
     res.status(201).json(project);
@@ -46,7 +45,7 @@ export const createProject = async (req: Request, res: Response) => {
   }
 };
 
-// ✏️ Update project
+
 export const updateProject = async (req: Request, res: Response) => {
   try {
     const project = await Project.findByIdAndUpdate(req.params.id, req.body, {
@@ -60,7 +59,7 @@ export const updateProject = async (req: Request, res: Response) => {
   }
 };
 
-// 🗑️ Delete project
+
 export const deleteProject = async (req: Request, res: Response) => {
   try {
     const project = await Project.findByIdAndDelete(req.params.id);

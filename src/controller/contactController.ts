@@ -12,7 +12,7 @@ export const submitContact = async (req: Request, res: Response) => {
 
     const newMessage = await Contact.create({ name, email, message });
 
-    // 1️⃣ Email to admin
+
     const adminEmailHTML = `
       <h2>New Contact Message</h2>
       <p><strong>Name:</strong> ${name}</p>
@@ -27,7 +27,6 @@ export const submitContact = async (req: Request, res: Response) => {
       adminEmailHTML
     );
 
-    // 2️⃣ Auto-reply to user
     const userReplyHTML = `
   <h3>Hello ${name},</h3>
 
@@ -54,7 +53,6 @@ export const submitContact = async (req: Request, res: Response) => {
   }
 };
 
-// 📨 Admin-only: Get all messages
 export const getMessages = async (req: Request, res: Response) => {
   try {
     const messages = await Contact.find().sort({ createdAt: -1 });
@@ -65,7 +63,7 @@ export const getMessages = async (req: Request, res: Response) => {
   }
 };
 
-// 🗑️ Admin-only: Delete a message
+
 export const deleteMessage = async (req: Request, res: Response) => {
   try {
     const message = await Contact.findByIdAndDelete(req.params.id);

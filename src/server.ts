@@ -11,18 +11,15 @@ dotenv.config();
 
 const app: Application = express();
 
-// ===============================
-// ✅ CORS MIDDLEWARE (WORKS ON VERCEL)
-// ===============================
+
 const WHITELIST = [
   "http://localhost:5173",
-  "https://client-eight-liard-57.vercel.app"
+  "https://portfolio-pi-sepia-70.vercel.app"
 ];
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const origin = req.headers.origin as string | undefined;
 
-  // Allow server-to-server or tools without Origin
   if (!origin) return next();
 
   if (WHITELIST.includes(origin)) {
@@ -37,7 +34,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       "GET, POST, PUT, DELETE, OPTIONS"
     );
 
-    // Handle preflight
     if (req.method === "OPTIONS") {
       return res.status(200).end();
     }
@@ -48,15 +44,11 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   return res.status(403).json({ error: "CORS blocked" });
 });
 
-// ===============================
-// Middleware
-// ===============================
+
 app.use(express.json());
 app.use(cookieParser());
 
-// ===============================
-// MongoDB Connection
-// ===============================
+
 (async () => {
   try {
     await connectDB();
@@ -66,9 +58,7 @@ app.use(cookieParser());
   }
 })();
 
-// ===============================
-// Routes
-// ===============================
+
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/contact", contactRoutes);
@@ -78,10 +68,6 @@ app.get("/", (_req: Request, res: Response) => {
   res.send("Portfolio Backend API is running 🚀");
 });
 
-// ===============================
-// Start Server (required for local dev)
-// Vercel uses serverless functions for production
-// ===============================
 const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => {
